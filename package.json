@@ -1,0 +1,22 @@
+{
+  "name": "golang-binding-nodejs-native-addon-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-native": "./run-build.sh",
+    "install": "npm run build-native && node-gyp rebuild"
+  },
+  "author": "Jeremy Li",
+  "license": "ISC",
+  "dependencies": {
+    "nan": "^2.15.0"
+  },
+  "devDependencies": {
+    "node-gyp": "^8.2.0"
+  }
+}
