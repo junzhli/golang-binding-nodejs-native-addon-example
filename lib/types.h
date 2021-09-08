@@ -3,6 +3,7 @@
 
 typedef struct go_args {
  double num;
+ char *str;
 } GoArgs;
 
 #endif

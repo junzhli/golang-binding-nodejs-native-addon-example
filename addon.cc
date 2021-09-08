@@ -40,6 +40,7 @@ public:
   void HandleOKCallback () {
     Local<Object> res = Nan::New<Object>();
     Nan::Set(res, Nan::New<String>("num").ToLocalChecked(), Nan::New<Number>(result.num));
+    Nan::Set(res, Nan::New<String>("str").ToLocalChecked(), Nan::New<String>(result.str).ToLocalChecked());
 
     Isolate *isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
@@ -59,6 +60,11 @@ private:
   Persistent<v8::Promise::Resolver> *persistentResolver;
 };
 
+char* ToCString(Local<String> str) {
+  Nan::Utf8String value(str);
+  return *value;
+}
+
 void SumAsync (const FunctionCallbackInfo<Value> &info) {
   Isolate *isolate = info.GetIsolate();
   HandleScope scope(isolate);
@@ -66,19 +72,22 @@ void SumAsync (const FunctionCallbackInfo<Value> &info) {
 
   Local<Object> obj = info[0]->ToObject(context).ToLocalChecked();
   Local<Value> value = Nan::Get(obj, Nan::New<String>("num").ToLocalChecked()).ToLocalChecked();
+  Local<Value> value2 = Nan::Get(obj, Nan::New<String>("str").ToLocalChecked()).ToLocalChecked();
   auto resolver = v8::Promise::Resolver::New(context).ToLocalChecked();
   auto persistientResolver = new  Persistent<v8::Promise::Resolver>(resolver);
   auto promise = resolver->GetPromise();
 
-  if (!value->IsNumber()) {
+  if (!value->IsNumber() || !value2->IsString()) {
     // if nothing, invoke callback with error
-    Local<Value> err = Nan::Error("A number value for 'num' must be supplied");
+    Local<Value> err = Nan::Error("A number value for 'num' or A string value for 'str' must be supplied");
     resolver->Reject(context, err);
   } else {
     // otherwise perform work
     GoArgs args;
     args.num = value->NumberValue(context).ToChecked();
-    std::cout << args.num << " is the value\n";
+    args.str = ToCString(value2->ToString(context).ToLocalChecked());
+    std::cout << args.num << " is the value for num\n";
+    std::cout << args.str << " is the value for str\n";
     AsyncQueueWorker(new MyWorker(args, persistientResolver, 0));
   }
 
